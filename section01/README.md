@@ -6,7 +6,7 @@
 最も重要な型は次のとおりです:
 
 - [Client](https://golang.org/pkg/net/http/#Client)
-- [Request](https://golang.org/pkg/net/http/#Client)
+- [Request](https://golang.org/pkg/net/http/#Request)
 - [Response](https://golang.org/pkg/net/http/#Response)
 
 これらの型がどのように機能するか短い時間ですが見ていきます。
