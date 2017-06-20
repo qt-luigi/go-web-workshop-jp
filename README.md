@@ -12,6 +12,8 @@ At first I was translating it by myself, then using Google Translate by GNMT fro
 私は [@francesc](https://twitter.com/francesc) 氏からこのリポジトリーを公開する許可を得ました。
 最初は自分で翻訳していたのですが、途中からGNMTによるGoogle翻訳を使用し、最後にもう一度自分でチェックして修正しました。
 
+[![Build Status](https://travis-ci.org/campoy/go-web-workshop.svg)](https://travis-ci.org/campoy/go-web-workshop) [![Go Report Card](https://goreportcard.com/badge/github.com/campoy/go-web-workshop)](https://goreportcard.com/report/github.com/campoy/go-web-workshop)
+
 # GoでWebアプリケーションを構築する
 
 ようこそ、ゴーファー！ あなたはゴーファーではありませんか？
@@ -30,7 +32,7 @@ At first I was translating it by myself, then using Google Translate by GNMT fro
 1. [Goプログラミング言語][1] をインストールしている。
 1. [How To Write Go Code][9] チュートリアルに従って `GOPATH` を設定している。
 1. Goの基礎にある程度精通している。（ [Goツアー][2] はGoをはじめるのにとても良い場所です）
-1. Googleアカウントを取得していて、[Go SDK][3] をインストールしている。
+1. Googleアカウントを取得していて、[Google Cloud SDK][3] をインストールしている。
 
 ## コンテンツ
 
@@ -81,5 +83,5 @@ Goコミュニティの新人として、あなたは疑問を抱いたりどこ
 
 [1]: https://golang.org
 [2]: https://tour.golang.org
-[3]: https://cloud.google.com/appengine/downloads#Google_App_Engine_SDK_for_Go
+[3]: https://cloud.google.com/sdk/downloads
 [9]: https://golang.org/doc/code.html#Organization

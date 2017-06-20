@@ -53,37 +53,23 @@ func Put(c appengine.Context, key *Key, src interface{}) (*Key, error)
 
 - 最初の引数は `appengine.Context` で、与えられたリクエストに関連するすべての操作をリンクする手段です。
 
-- 二つ目の引数は ```*datastore.Key``` で、以下のコードスニペットで作成する方法で見ることができます。
+- 二つ目の引数は `*datastore.Key` で、以下のコードスニペットで作成する方法で見ることができます。
 
 - そして、最後の引数は保存される値です。
 
-- この関数は別の ```*datastore.Key``` を返し、データの格納中に何らかのエラーが発生した場合は、nil以外のエラーを返します。
+- この関数は別の `*datastore.Key` を返し、データの格納中に何らかのエラーが発生した場合は、nil以外のエラーを返します。
 
 `datastore.Put` 関数の使い方の例を見てみましょう:
 
+[embedmd]:# (examples/app.go /func complete/ /^}/)
 ```go
-package app
+func completeHandler(w http.ResponseWriter, r *http.Request) {
+	// HTTPリクエストから新しいApp Engineコンテキストを作成する。
+	ctx := appengine.NewContext(r)
 
-import (
-	"fmt"
-	"net/http"
-
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
-)
-
-// Personは、名前と個人の年齢を保有します。
-type Person struct {
-	Name     string
-	AgeYears int
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
 	p := &Person{Name: "gopher", AgeYears: 5}
 
-	// HTTPリクエストから新しいApp Engineコンテキストを生成する。 
-	ctx := appengine.NewContext(r)
-	// Personカインドとgopher値の完全キーを生成する。
+	// Personカインドとgopher値の新しい完全キーを作成する。
 	key := datastore.NewKey(ctx, "Person", "gopher", 0, nil)
 	// データストアにpを設定する。
 	key, err := datastore.Put(ctx, key, p)
@@ -126,12 +112,14 @@ func NewIncompleteKey(c appengine.Context, kind string, parent *Key) *Key
 キーの最終的な値としてデータストアに値を入れると決定されます。
 最終的な値は `datastore.Put` によって返されたキーを使って取得することができます。
 
+[embedmd]:# (examples/app.go /func incompleteHandler/ /^}/)
 ```go
-func handler(w http.ResponseWriter, r *http.Request) {
-	p := &Person{"gopher", 5}
-
+func incompleteHandler(w http.ResponseWriter, r *http.Request) {
 	// HTTPリクエストから新しいApp Engineコンテキストを生成する。
 	ctx := appengine.NewContext(r)
+
+	p := &Person{Name: "gopher", AgeYears: 5}
+
 	// Personカインドの新しい不完全キーを生成する。
 	key := datastore.NewIncompleteKey(ctx, "Person", nil)
 	// データストアにpを設定する。
@@ -175,15 +163,20 @@ func Get(c appengine.Context, key *Key, dst interface{}) error
 最後の引数は取得するフィールドを含む構造体へのポインターでなければなりません。
 たとえば、次のようにします:
 
+[embedmd]:# (examples/app.go /func getHandler/ /^}/)
 ```go
-ctx := appengine.NewContext(r)
+func getHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
 
-key := datastore.NewKey(ctx, "Person", "gopher", 0, nil)
+	key := datastore.NewKey(ctx, "Person", "gopher", 0, nil)
 
-var p Person
-err := datastore.Get(ctx, key, &p)
-if err != nil {
-	// エラーを処理する
+	var p Person
+	err := datastore.Get(ctx, key, &p)
+	if err != nil {
+		http.Error(w, "Person not found", http.StatusNotFound)
+		return
+	}
+	fmt.Fprintln(w, p)
 }
 ```
 
@@ -245,25 +238,44 @@ func (q *Query) Run(c appengine.Context) *Iterator
 
 名前で並べ替えた10歳以下の _カインド_ `Person` のすべての値を取得する例を見てみましょう。
 
+[embedmd]:# (examples/app.go /queryHandler/ /^}/)
 ```go
-ctx := appengine.NewContext(r)
+func queryHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
 
-var p []Person
+	var p []Person
 
-// Personカインドで新しいクエリーを生成する。
-q := datastore.NewQuery("Person")
+	// Personカインドで新しいクエリーを生成する。
+	q := datastore.NewQuery("Person")
 
-// Ageフィールドが10以下の値だけを取得する。
-q = q.Filter("Age <=", 10)
+	// Ageフィールドが10以下の値だけを取得する。
+	q = q.Filter("Age <=", 10)
 
-// 名前フィールドで全ての値を並べ替える。
-q = q.Order("Name")
+	// 名前フィールドで全ての値を並べ替える。
+	q = q.Order("Name")
 
-// 最後に全ての値をpで取得するクエリーを実行する。
-_, err := q.GetAll(ctx, &p)
-if err != nil {
-	// handle the error
+	// 最後に全ての値をpで取得するクエリーを実行する。
+	_, err := q.GetAll(ctx, &p)
+	if err != nil {
+		// handle the error
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintln(w, p)
 }
+```
+
+Note that `Filter` and `Order` return a `*datastore.Query`.
+This means you can chain those operations into a single expression.
+
+`Filter` と `Order` は `*datastore.Query` を返します。
+つまり、これらの操作をひとつの式に連結することができます。
+
+[embedmd]:# (examples/app.go /q :=.*\.$/ /^$/)
+```go
+q := datastore.NewQuery("Person").
+		Filter("Age <=", 10).
+		Order("Name")
 ```
 
 [ここ](https://cloud.google.com/appengine/docs/go/datastore/queries) でDatastore Queryの詳細を見つけられます。

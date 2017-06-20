@@ -6,6 +6,7 @@
 
 とりあえず簡単なHTMLページで始めましょう:
 
+[embedmd]:# (all_static/hello.html /.*DOCTYPE/ $)
 ```html
 <!DOCTYPE html>
 
@@ -21,6 +22,7 @@
 
 この静的ページを提供するための新しい `app.yaml` を作成することができます:
 
+[embedmd]:# (all_static/app.yaml)
 ```yaml
 runtime: go
 api_version: go1
@@ -42,18 +44,24 @@ handlers:
 
 - または任意のGoコードを追加する、これは `dummy.go` ファイルと同じくらい簡単です:
 
+[embedmd]:# (all_static/dummy.go /package dummy/ $)
 ```go
 package dummy
 ```
+
 後ほどGoコードを追加するので、後者を行います。
 
 アプリケーションをもう一度実行してみてください:
 
-	$ goapp serve .
+```bash
+$ dev_appserver.py .
+```
 
 または、それをデプロイします:
 
-	$ goapp deploy --application=your-project-id --version=1 .
+```bash
+$ gcloud app deploy app.yaml
+```
 
 そして出力が期待通りのものであることを確認します:
 
@@ -80,6 +88,7 @@ Goサービス（旧名：モジュール）の詳細についてはこの [ド�
 
 ここで部分的に変更するのは `app.yaml` だけです:
 
+[embedmd]:# (mixed_content/app.yaml)
 ```yaml
 runtime: go
 api_version: go1
@@ -89,7 +98,7 @@ handlers:
 - url: /
   static_files: hello.html
   upload: hello.html
-# helloパスのリクエストはGoアプリとして処理されます。
+# /api/パスのリクエストはGoアプリとして処理されます。
 - url: /api/hello
   script: _go_app
 ```
@@ -102,6 +111,7 @@ handlers:
 これはあなたが考えることができるJavaScriptフレームワークと同じくらい*多くの*方法で行うことができます。
 この簡単な例では、単に [jQuery](https://jquery.com) を使用します。
 
+[embedmd]:# (mixed_content/hello.html /.*DOCTYPE/ $)
 ```html
 <!DOCTYPE html>
 
@@ -109,20 +119,14 @@ handlers:
 <head>
 	<title>Hello, App Engine</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-	<style>
-	h1 {
-		text-align: center;
-		color: #a74;
-	}
-	</style>
 </head>
 <body>
 	<h1>Hello, App Engine</h1>
 	<p>The backend says: <span id="message"></span></p>
 	<script>
-	$(function() {
-		$('#message').load('/api/hello');
-	});
+		$(function() {
+			$("#message").load("/api/hello");
+		});
 	</script>
 </body>
 </html>
@@ -144,19 +148,22 @@ handlers:
 
 この場合の `app.yaml` は次のようになります:
 
+[embedmd]:# (static_dirs/app.yaml /runtime/ $)
 ```yaml
 runtime: go
 api_version: go1
 
 handlers:
-# プリフィックス /api/ の付いたリクエストはGoアプリとして処理されます。
+# /api/ で始まるリクエストはGoアプリとして処理されます。
 - url: /api/.*
   script: _go_app
-# ルートパス上のリクエストはindex.htmlを表示します。
+
+# パスが空の場合はindex.htmlを表示します。
 - url: /
   static_files: static/index.html
   upload: static/index.html
-# それ以外の場合は、静的ディレクトリーのパスを探索します。
+
+# それ以外の場合は、静的ディレクトリーでパスを探索します。
 - url: /
   static_dir: static
 ```

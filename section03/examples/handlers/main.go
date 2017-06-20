@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc. All rights reserved.
+// Copyright 2017 Google Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -21,17 +21,26 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/hello", handler)
+	http.HandleFunc("/body", bodyHandler)
+	http.HandleFunc("/param", paramHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func bodyHandler(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "could not read body: %v", err)
 		return
 	}
 	name := string(b)
+	if name == "" {
+		name = "friend"
+	}
+	fmt.Fprintf(w, "Hello, %s!", name)
+}
+
+func paramHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("name")
 	if name == "" {
 		name = "friend"
 	}

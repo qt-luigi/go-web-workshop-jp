@@ -25,8 +25,8 @@ GoでJSONオブジェクトをエンコードおよびデコードする最も�
 
 ```go
 type Person struct {
-	Name      string
-	AgeYears  int
+	Name     string
+	AgeYears int
 }
 ```
 
@@ -40,6 +40,7 @@ GoのフィールドごとにJSONフォームで使用される名前を変更�
 
 たとえば、前の例に次のフィールドタグを追加します:
 
+[embedmd]:# (examples/app.go /type Person/ /^}/)
 ```go
 type Person struct {
 	Name     string `json:"name"`
@@ -50,28 +51,6 @@ type Person struct {
 _注釈_: バッククォート ```(`)``` はGoで文字列を書く方法とはまったく異なります。
 それらは二重引用符 `(")` を使用して複数の行にまたがることを許しています。
 
-`Person` 型の新しい変数を宣言するために、2つのオプションがあります:
-
-- `var` キーワードを使用してそのフィールドに初期値を与えない、
-
-```go
-	var p Person
-	fmt.Println(p)
-	// output: Person{ 0}
-
-	// 構造体を出力するためのより良い方法
-	fmt.Printf("%#v\n", p)
-	// output: main.Person{Name:"", AgeYears:0}
-```
-
-- または、`:=` 演算子を使用してフィールドを初期化する。
-
-```go
-	p := Person{Name: "gopher", AgeYears: 5}
-	fmt.Printf("%#v\n", p)
-	// output: main.Person{Name:"gopher", AgeYears:5}
-```
-
 構造体の詳細については、Goツアーの [このセクション](https://tour.golang.org/moretypes/5) を参照してください。
 
 ### Go構造体をJSONにエンコードする
@@ -79,16 +58,9 @@ _注釈_: バッククォート ```(`)``` はGoで文字列を書く方法とは
 Go構造体をエンコードするために、私たちは便利な `Encode` メソッドを提供する、
 [`json.Encoder`](https://golang.org/pkg/encoding/json/#Encoder) を使用します。
 
+[embedmd]:# (examples/app.go /func encode/ /^}/)
 ```go
-package main
-
-import (
-	"encoding/json"
-	"log"
-	"os"
-)
-
-func main() {
+func encode() {
 	p := Person{"gopher", 5}
 
 	// 標準出力に書き込むエンコーダを生成する。
@@ -112,18 +84,9 @@ func main() {
 
 `json.Encoder` と同じように、`json.Decoder` とその使い方はとても似ています。
 
+[embedmd]:# (examples/app.go /func decode/ /^}/)
 ```go
-
-package main
-
-import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
-)
-
-func main() {
+func decode() {
 	// 空のPerson値を作成する。
 	var p Person
 
@@ -161,8 +124,9 @@ type HandlerFunc func(ResponseWriter, *Request)
 
 そのため、HTTPレスポンスで `Person` を簡単にJSONエンコードできます:
 
+[embedmd]:# (examples/app.go /func encodeHandler/ /^}/)
 ```go
-func handler(w http.ResponseWriter, r *http.Request) {
+func encodeHandler(w http.ResponseWriter, r *http.Request) {
 	p := Person{"gopher", 5}
 
 	// Content-Typeヘッダを設定する。
@@ -171,7 +135,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// pを出力にエンコードする。
 	enc := json.NewEncoder(w)
 	err := enc.Encode(p)
-	if  err != nil {
+	if err != nil {
 		// エンコーディングが失敗した場合は、コード500のエラーページを生成する。
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -187,8 +151,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 `io.ReadCloser` は `io.Reader` であると言うことができ、したがって、
 `http.Request` の `Body` を `json.Decoder` の入力として使うことができます。
 
+[embedmd]:# (examples/app.go /func decodeHandler/ /^}/)
 ```go
-func handler(w http.ResponseWriter, r *http.Request) {
+func decodeHandler(w http.ResponseWriter, r *http.Request) {
 	var p Person
 
 	dec := json.NewDecoder(r.Body)
@@ -203,8 +168,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 このハンドラーをテストしたい場合、curlを使うことができます:
 
-	$ curl -d '{"name": "gopher", "age_years": 5}' http://localhost:8080/
-	Name is gopher and age is 5
+```bash
+$ curl -d '{"name": "gopher", "age_years": 5}' http://localhost:8080/
+Name is gopher and age is 5
+```
 
 ## 演習
 

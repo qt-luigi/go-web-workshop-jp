@@ -38,6 +38,7 @@ Google App Engineでは、あなたはコードを提供し、Googleは責任を
 
 これにより以前のコードが単純化されます:
 
+[embedmd]:# (examples/hello.go /package hello/ $)
 ```go
 package hello
 
@@ -77,6 +78,7 @@ $ go get -u google.golang.org/appengine/...
 
 新しい `appengine.Context` を作成するには `appengine.NewContext` を呼び出してHTTPリクエストを渡す必要があります。
 
+[embedmd]:# (app/app.go /package app/ $)
 ```go
 package app
 
@@ -118,6 +120,7 @@ App Engineのすべてに基本な `appengine.Context` がどのように使わ�
 
 これはHello, App Engineアプリケーションの `app.yaml` ファイルです。
 
+[embedmd]:# (app/app.yaml)
 ```yaml
 runtime: go                    # ランタイム (python, java, go, php)
 api_version: go1               # ランタイムのバージョン
@@ -130,15 +133,19 @@ handlers:
 ## アプリケーションをローカルで実行する
 
 ディレクトリーに `main.go` と `app.yaml` のファイルがあれば、
-そのディレクトリーに移動してApp Engine用のGo SDKに付属する `goapp` ツールを実行することで、
+そのディレクトリーに移動してApp Engine用のGo SDKに付属する `dev_appserver.py` ツールを実行することで、
 アプリケーションをローカルで実行することができます。
 
-	$ goapp serve .
+```bash
+$ dev_appserver.py .
+```
 
 多くのログが表示され、エラーをチェックし、すべて正常に機能する場合は、
 次のようなメッセージが表示されます:
 
-	INFO     2016-08-31 15:21:05,793 dispatcher.py:197] Starting module "default" running at: http://localhost:8080
+```bash
+INFO     2016-08-31 15:21:05,793 dispatcher.py:197] Starting module "default" running at: http://localhost:8080
+```
 
 http://localhost:8080/hello にアクセスすれば、美しいWebアプリケーションが再び表示されます。
 
@@ -152,22 +159,22 @@ http://localhost:8080/hello にアクセスすれば、美しいWebアプリケ�
 
 1. https://console.developers.google.com にアクセスし、資格情報でログインします。
 1. `プロジェクトを作成` をクリックし、名前とプロジェクトIDを選択します
+1. `gcloud init` を実行し、直近に作成したプロジェクトを選択します。 Computeゾーンを設定する必要はありません。
 
 これだけです！ これでコードをGoogle App Engineサーバーにデプロイできます。
 
 `app.yaml` を修正し、作成したプロジェクトのプロジェクトIDを含む `application` 行を変更して、
 デプロイするアプリを実行してください:
 
-	$ goapp deploy --version=1 --application=your-project-id .
+```bash
+$ gcloud app deploy app.yaml
+```
 
-初めて `goapp` を実行すると、ブラウザーが開いて認証と承認のプロセスを経ますが、
-これは一度だけ起こります。
+これが成功すると、あなたのアプリは https://your-project-id.appspot.com で利用可能になり、次で実行します。
 
-何らかの理由で、これを再度行う必要がある場合は、認証情報を削除することができます:
-
-	$ rm -f ~/.appcfg_oauth2_tokens
-
-これが成功すると、あなたのアプリは https://your-project-id.appspot.com で利用可能になります。
+```bash
+$ gcloud app browse
+```
 
 ### App Engineにデプロイする演習
 

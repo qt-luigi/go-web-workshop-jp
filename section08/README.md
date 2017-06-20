@@ -16,7 +16,20 @@ func Client(context appengine.Context) *http.Client
 `appengine.Context` を指定すると、HTTPクライアントが取得され、そこから開始することができます。
 Googleのホームページを取得したい場合は、次のようにします:
 
+[embedmd]:# (fetch/fetch.go /package fetch/ /^}/)
 ```go
+package fetch
+
+import (
+	"io"
+	"net/http"
+
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/urlfetch"
+)
+
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 
@@ -27,7 +40,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	res, err := c.Get("https://google.com")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
+		return
 	}
 
 	// この関数の最後でbodyを閉じる必要がある

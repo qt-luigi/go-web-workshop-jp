@@ -21,9 +21,14 @@
 
 それは簡単です！ そのため `/hello?msg=world` というURLでパラメーター `msg` の値を取得したい場合、次のプログラムを書くことができます。
 
+[embedmd]:# (examples/handlers/main.go /func paramHandler/ /^}/)
 ```go
-func handler(w http.ResponseWriter, r *http.Request) {
-    msg := r.FormValue("msg")
+func paramHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("name")
+	if name == "" {
+		name = "friend"
+	}
+	fmt.Fprintf(w, "Hello, %s!", name)
 }
 ```
 
@@ -35,13 +40,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 あなたは自分のブラウザーでテストすることができますが、`curl` でもいくつか試してみましょう。
 これらを実行する前に、あなたが確認したいこととその理由を考えてください。
 
-    $ curl "localhost:8080/hello?name=world"
+```bash
+$ curl "localhost:8080/hello?name=world"
 
-    $ curl "localhost:8080/hello?name=world&name=francesc"
+$ curl "localhost:8080/hello?name=world&name=francesc"
 
-    $ curl -X POST -d "name=francesc" "localhost:8080/hello"
+$ curl -X POST -d "name=francesc" "localhost:8080/hello"
 
-    $ curl -X POST -d "name=francesc" "localhost:8080/hello?name=potato"
+$ curl -X POST -d "name=francesc" "localhost:8080/hello?name=potato"
+```
 
 あなたのプログラムが `name` に与えられたすべての値をどのように出力させるのかを考えてください。
 
@@ -53,6 +60,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 `io.Reader` から読み込むことができる方法はたくさんありますが、とりあえず `ioutil.ReadAll` を使うことができ、何か問題が起これば `[]byte` と `error` を返します。
 
+[embedmd]:# (examples/handlers/main.go /func bodyHandler/ /^}/)
+```go
+func bodyHandler(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "could not read body: %v", err)
+		return
+	}
+	name := string(b)
+	if name == "" {
+		name = "friend"
+	}
+	fmt.Fprintf(w, "Hello, %s!", name)
+}
+```
+
 ### Hello, bodyの演習
 
 前の演習を修正し、`name` 引数をクエリーやフォームの値から読み込む代わりに、`Body` の内容を使用してください。
@@ -62,7 +85,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 `curl` を使用してあなたの演習をテストできます:
 
-    $ curl -X POST -d "francesc" "localhost:8080/hello"
+```bash
+$ curl -X POST -d "francesc" "localhost:8080/hello"
+```
 
 さらなる演習として、nameの周りの余分な空白スペースを削除してください。
 
@@ -114,7 +139,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 短い出力に対しては、推測が困難です。
 `curl` コマンドに `-v` を追加することで、あなたのレスポンスのコンテンツタイプを見ることができます。
 
-```
+```bash
 $ curl -v localhost:8080
 < HTTP/1.1 200 OK
 < Date: Mon, 25 Apr 2016 16:14:46 GMT
@@ -129,6 +154,7 @@ $ curl -v localhost:8080
 `Header` は、他のメソッドの中でも、`Set` メソッドを持つ [`http.Header`](https://golang.org/pkg/net/http/#Header) を返します。
 このように `w` という名前の `ResponseWriter` でコンテンツタイプを設定することができます。
 
+[embedmd]:# (examples/texthandler/main.go /w.Header.*/)
 ```go
 w.Header().Set("Content-Type", "text/plain")
 ```
@@ -143,29 +169,32 @@ w.Header().Set("Content-Type", "text/plain")
 
 始めに `http.HandlerFunc` を含む `textHandler` という名前の新しい型を定義します。
 
+[embedmd]:# (examples/texthandler/main.go /type textHandler/ /^}/)
 ```go
 type textHandler struct {
-    h http.HandlerFunc
+	h http.HandlerFunc
 }
 ```
 
 ここで `textHandler` に `ServeHTTP` メソッドを定義し、`http.Handler` インターフェースを満たします。
 
+[embedmd]:# (examples/texthandler/main.go /.*ServeHTTP/ /^}/)
 ```go
 func (t textHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-   // コンテンツタイプを設定する
-   w.Header().Set("Content-Type", "text/plain")
-   // デコレートされたハンドラーでServeHTTPを呼び出す。
-   t.h(w, r)
+	// コンテンツタイプを設定する
+	w.Header().Set("Content-Type", "text/plain")
+	// デコレートされたハンドラーでServeHTTPを呼び出す。
+	t.h(w, r)
 }
 ```
 
 最後に `http.HandleFunc` での呼び出しを `http.Handle` に置き換えます。
 
+[embedmd]:# (examples/texthandler/main.go /func main/ /^}/)
 ```go
 func main() {
-    http.Handle("/hello", textHandler{helloHandler})
-    http.ListenAndServe(":8080", nil)
+	http.Handle("/hello", textHandler{helloHandler})
+	http.ListenAndServe(":8080", nil)
 }
 ```
 

@@ -2,14 +2,14 @@
 
 webサーバーを書き始める前に、簡単なGoプログラムを分析してみましょう。
 
+[embedmd]:# (hello/main.go /package main/ $)
 ```go
 package main
 
-import "fmt"
+import    "fmt"
 
-func   main() {
-    fmt.Println(  "hello, world!"  );
-    }
+func         main() {
+	fmt.Println("hello, world!");        }
 ```
 
 あなたはこのプログラムのすべての行を理解できるはずです。
@@ -43,18 +43,18 @@ func   main() {
 
 `main.go` から `import "fmt"` 行を削除して実行すると、エラーを確認できるはずです:
 
-```
-    $ go run main.go
-    # command-line-arguments
-    ./main.go:5: undefined: fmt in fmt.Println
+```bash
+$ go run main.go
+# command-line-arguments
+./main.go:5: undefined: fmt in fmt.Println
 ```
 
 あなたは不足しているimport文を手動で追加したり `goimports` を使うことでこのエラーを修正できます。
 
 あなたのマシンに `goimports` がインストールされていないなら、次を実行することで簡単にインストールできます:
 
-```
-    $ go get golang.org/x/tools/cmd/goimports
+```bash
+$ go get golang.org/x/tools/cmd/goimports
 ```
 
 これは `$GOAPTH/bin` に `goimports` のバイナリーをインストールします。

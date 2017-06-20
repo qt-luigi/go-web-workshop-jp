@@ -19,6 +19,7 @@ HTTPレスポンスでヘッダーを設定する手段を提供します。
 
 単に `"Hello、web"` を出力に書き出す非常に簡単なHTTPハンドラーを見てみましょう:
 
+[embedmd]:# (examples/step1/main.go /package main/ /^}/)
 ```go
 package main
 
@@ -54,6 +55,7 @@ func HandleFunc(pattern string, handler func(ResponseWriter, *Request))
 
 上記で定義した `helloHandler` を登録する方法を見てみましょう:
 
+[embedmd]:# (examples/step2/main.go /package main/ $)
 ```go
 package main
 
@@ -70,11 +72,14 @@ func main() {
 	http.HandleFunc("/hello", helloHandler)
 }
 ```
+
 `main` 関数の一部としてハンドラーを登録していることに注意してください。
 
 上記のコードを実行してみてください:
 
-	$ go run main.go
+```bash
+$ go run examples/step2/main.go
+```
 
 何が起こりますか？ そう、私たちはパズルの最後のピースを欠いています: webサーバーを起動します！
 
@@ -138,6 +143,7 @@ type error interface {
 したがって、サーバーが正常に起動したことを確認し、エラーをログに記録したい場合は、
 `ListenAndServe` を呼び出すようにコードを修正します。
 
+[embedmd]:# (examples/step3/main.go /package main/ $)
 ```go
 package main
 
@@ -159,8 +165,6 @@ func main() {
 	}
 }
 ```
-
-_注釈_: あなたは [main.go](main.go) で完全なコードを見つけることができます。
 
 このコードを実行すると `127.0.0.1:8080` で待ち受けているwebサーバーが起動します。
 
@@ -190,12 +194,13 @@ httpレスポンスに `"Bye、web"` を出力する `byeHandler` という名�
 これらのケースは手作業または既存の `net/http` パッケージに正しくプラグインされる
 [Gorillaツールキット](http://www.gorillatoolkit.org/) とその `mux` パッケージのようなツールキットを使って処理することができます。
 
-
+[embedmd]:# (examples/gorilla.go /package main/ $)
 ```go
 package main
 
 import (
-	...
+	"log"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -210,6 +215,7 @@ func addProduct(w http.ResponseWriter, r *http.Request) {
 
 func getProduct(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["productID"]
+	log.Printf("fetching product with ID %q", id)
 	// 特定のproductを取得する
 }
 

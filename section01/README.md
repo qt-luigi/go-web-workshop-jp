@@ -16,21 +16,23 @@
 
 これらのヘルパー関数のひとつが [`Get`](https://golang.org/pkg/net/http/#Get) です。
 
+[embedmd]:# (examples/get.go /package main/ $)
 ```go
 package main
 
 import (
-        "fmt"
-        "log"
-        "net/http"
+	"fmt"
+	"log"
+	"net/http"
 )
 
 func main() {
-        res, err := http.Get("https://golang.org")
-        if err != nil {
-                log.Fatal(err)
-        }
-        fmt.Println(res.Status)
+	// このurlの値を変更してみてください
+	res, err := http.Get("https://golang.org")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res.Status)
 }
 ```
 [ソースコード](examples/get.go)
@@ -85,6 +87,7 @@ URLの値を変更して他のコードでは何が取得できるかを確認�
 
 `Client` 型は与えられた `Request` を送信する `Do` メソッドを公開し、`Response` と `error` を返します。
 
+[embedmd]:# (examples/do-get.go /package main/ $)
 ```go
 package main
 
@@ -94,7 +97,7 @@ import (
 	"net/http"
 )
 
-func main() {
+func doGet() {
 	req, err := http.NewRequest("GET", "https://golang.org", nil)
 	if err != nil {
 		log.Fatalf("could not create request: %v", err)
@@ -123,7 +126,7 @@ func main() {
 これによりリクエストの本文に送信した文字列が保存され、後で取得することができます:
 
 ```
-    $ curl https://http-methods.appspot.com/YourName/Message
+$ curl https://http-methods.appspot.com/YourName/Message
 ```
 
 ## パラメーター: クエリーとフォーム

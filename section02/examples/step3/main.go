@@ -19,15 +19,14 @@ import (
 	"net/http"
 )
 
-func doGet() {
-	req, err := http.NewRequest("GET", "https://golang.org", nil)
+func helloHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Hello, web")
+}
+
+func main() {
+	http.HandleFunc("/hello", helloHandler)
+	err := http.ListenAndServe("127.0.0.1:8080", nil)
 	if err != nil {
-		log.Fatalf("could not create request: %v", err)
+		log.Fatal(err)
 	}
-	client := http.DefaultClient
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("http request failed: %v", err)
-	}
-	fmt.Println(res.Status)
 }

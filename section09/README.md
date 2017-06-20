@@ -50,18 +50,36 @@ type Item struct {
 キー "name" と値 "gopher" を持つitemを1時間有効にして保存する場合、
 次のように書くことができます:
 
+[embedmd]:# (getset/app.go /package app/ /^}/)
 ```go
-ctx := appengine.NewContext(r)
+package app
 
-item := &memcache.Item{
-	Key: "name",
-	Value: []byte("gopher"),
-	Expiration: 1 * time.Hour,
-}
+import (
+	"fmt"
+	"net/http"
+	"time"
 
-err := memcache.Set(ctx, item)
-if err != nil {
-	// エラーを処理する
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/memcache"
+)
+
+func set(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+
+	// リクエストからパラメーターkとvを取得する
+	key := r.FormValue("k")
+	value := r.FormValue("v")
+
+	item := &memcache.Item{
+		Key:        key,
+		Value:      []byte(value),
+		Expiration: 1 * time.Hour,
+	}
+
+	err := memcache.Set(ctx, item)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 ```
 
@@ -78,18 +96,22 @@ func Get(c appengine.Context, key string) (*Item, error)
 
 前のコードでキャッシュした値を取得しましょう:
 
+[embedmd]:# (getset/app.go /func get/ /^}/)
 ```go
-ctx := appengine.NewContext(r)
+func get(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
 
-item, err := memcache.Get(ctx, "name")
-switch err {
-case nil:
-	fmt.Fprintln(w, "name is %s", item.Value)
-case memcache.ErrCacheMiss:
-	// キーが見つからなかった、これは問題ありません
-	return
-default:
-	// 実際のエラーが発生、Memcacheはダウンしているか？
+	key := r.FormValue("k")
+
+	item, err := memcache.Get(ctx, key)
+	switch err {
+	case nil:
+		fmt.Fprintf(w, "%s", item.Value)
+	case memcache.ErrCacheMiss:
+		fmt.Fprint(w, "key not found")
+	default:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 ```
 
@@ -105,29 +127,50 @@ default:
 `memcache.Item` の `Value` フィールドを設定するのではなく、コーデックを使うときは `Object` フィールドを使うべきです。 
 例えば、次のようにJSONコーデックを使って `Person` をキャッシュして取得することができます:
 
+[embedmd]:# (codec/app.go /func set/ /^}/)
 ```go
-p := Person{
-	Name: "gopher",
-	AgeYears: 5,
-}
+func set(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
 
-item := &memcache.Item{
-	Key:        "last_person",
-	Object:     p,
-	Expiration: 1 * time.Hour,
-}
+	var p Person
+	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-// 私たちはJSONコーデックを使用する
-err := memcache.JSON.Set(ctx, item)
-// エラーを処理する
+	item := &memcache.Item{
+		Key:        "last_person",
+		Object:     p, // ValueではなくObjectフィールドを設定します
+		Expiration: 1 * time.Hour,
+	}
+
+	// JSONコーデックを使用します
+	err := memcache.JSON.Set(ctx, item)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
 ```
 
 それを取得するのは、さらに簡単です:
 
+[embedmd]:# (codec/app.go /func get/ /^}/)
 ```go
-var p Person
-_, err := memcache.JSON.Get(ctx, "last_person", &p)
-// エラーを処理する
+func get(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
+
+	var p Person
+	_, err := memcache.JSON.Get(ctx, "last_person", &p)
+	if err == nil {
+		json.NewEncoder(w).Encode(p)
+		return
+	}
+	if err == memcache.ErrCacheMiss {
+		fmt.Fprint(w, "key not found")
+		return
+	}
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+}
 ```
 
 [ここ](codec) でJSONコードを使用したアプリケーションの完全な例を見ることができます。
