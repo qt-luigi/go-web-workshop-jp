@@ -9,7 +9,7 @@ package main
 import    "fmt"
 
 func         main() {
-	fmt.Println("hello, world!");        }
+	fmt.Println("hello, world!")        }
 ```
 
 あなたはこのプログラムのすべての行を理解できるはずです。
