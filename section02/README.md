@@ -226,7 +226,9 @@ func main() {
 
 	// Gorillaルーターですべてのリクエストを処理する。
 	http.Handle("/", r)
-	http.ListenAndServe("127.0.0.1:8080", nil)
+	if err := http.ListenAndServe("127.0.0.1:8080", nil); err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
