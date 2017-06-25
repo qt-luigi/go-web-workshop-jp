@@ -265,9 +265,6 @@ func queryHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-Note that `Filter` and `Order` return a `*datastore.Query`.
-This means you can chain those operations into a single expression.
-
 `Filter` と `Order` は `*datastore.Query` を返します。
 つまり、これらの操作をひとつの式に連結することができます。
 
