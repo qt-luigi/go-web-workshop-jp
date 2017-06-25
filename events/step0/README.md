@@ -23,7 +23,6 @@ _注意_: Google Compute Engineのゾーンを設定する必要はありませ�
 
     $ gcloud app browse --version=step0
 
-This will display a basic Events page but also an alert will be alerted. That's fine, for now.
 これにより基本となるイベントページが表示されますがアラートにも警告が表示されます。 それは今のところ大丈夫です。
 
 作業が完了したら、[指示](../../section05/README.md#congratulations) に戻りましょう。
